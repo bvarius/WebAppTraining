@@ -8,7 +8,7 @@ Create Web App VMs
 
 Create database of DB user:pass combos, IP address, and OS types
 
-Create program that gives IP and prompts for username and password
+~~Create program that gives IP and prompts for username and password~~
 
 Implement queue functionality for sequential training
 
