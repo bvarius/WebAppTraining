@@ -43,7 +43,6 @@ def main():
     row_data = read_row(connection, row_number)
     if row_data:
         _, vm_name, _, db_web_app_user, db_web_app_pass, _, os_user, os_pass, db_config_location = row_data
-        print(row_data)
 
         print_vm_info(vm_name, os_user, os_pass)
 
