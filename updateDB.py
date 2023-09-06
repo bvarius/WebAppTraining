@@ -27,7 +27,7 @@ def prompt_user_for_field(field_name):
     """
     return input(f"Enter {field_name}: ")
 
-if __name__ == '__main__':
+def main():
     # Parse command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('--vm_name', help='VM name')
@@ -62,3 +62,6 @@ if __name__ == '__main__':
 
     # Close the database connection
     connection.close()
+    
+if __name__ == '__main__':
+    main()

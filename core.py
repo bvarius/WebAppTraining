@@ -1,4 +1,5 @@
 import sqlite3
+import random
 from termcolor import colored
 
 def read_row(connection, row_number):
@@ -13,20 +14,19 @@ def print_vm_info(vm_name, os_user, os_pass):
     print("OS Pass:", os_pass)
 
 def validate_credentials(web_app_user, web_app_pass, config_location, db_web_app_user, db_web_app_pass, db_config_location):
+    ret = False
     if (web_app_user == db_web_app_user and
             web_app_pass == db_web_app_pass and
             config_location == db_config_location):
-        print(colored("Great Job!", "green"))
-        print_vm_info(db_web_app_user, db_web_app_pass, db_config_location)
-        return True
-    else:
-        print(colored("Correct Values:", "green"))
-        if web_app_user == db_web_app_user:
-            print("Webapp Username: ", web_app_user)
-        if web_app_pass == db_web_app_pass:
-            print("Webapp Password: ", web_app_pass)
-        if config_location == db_config_location:
-            print("Webapp Config: ", config_location)
+        ret = True
+    print(colored("Correct Values:", "green"))
+    if web_app_user == db_web_app_user:
+        print("Webapp Username: ", web_app_user)
+    if web_app_pass == db_web_app_pass:
+        print("Webapp Password: ", web_app_pass)
+    if config_location == db_config_location:
+        print("Webapp Config: ", config_location)
+    if ret == False:
         print(colored("Incorrect Values:", "red"))
         if web_app_user != db_web_app_user:
             print("Webapp Username: ", web_app_user)
@@ -34,28 +34,34 @@ def validate_credentials(web_app_user, web_app_pass, config_location, db_web_app
             print("Webapp Password: ", web_app_pass)
         if config_location != db_config_location:
             print("Webapp Config: ", config_location)
-        return False
+    else:
+        print(colored("Great Job!", "green"))
+    return ret
 
 def main():
     connection = sqlite3.connect('webapps.db')
-    row_number = int(input("Enter the row number: "))
+    stop = 'n'
+    while(stop != 'y'):
+        row_number = random.randint(1,2)
 
-    row_data = read_row(connection, row_number)
-    if row_data:
-        _, vm_name, _, db_web_app_user, db_web_app_pass, _, os_user, os_pass, db_config_location = row_data
+        row_data = read_row(connection, row_number)
+        if row_data:
+            _, vm_name, _, db_web_app_user, db_web_app_pass, _, os_user, os_pass, db_config_location = row_data
 
-        print_vm_info(vm_name, os_user, os_pass)
+            print_vm_info(vm_name, os_user, os_pass)
 
-        while True:
-            web_app_user = input("Enter Webapp username: ")
-            web_app_pass = input("Enter Webapp password: ")
-            config_location = input("Enter config file path: ")
+            while True:
+                web_app_user = input("Enter Webapp username: ")
+                web_app_pass = input("Enter Webapp password: ")
+                config_location = input("Enter config file path: ")
 
-            if validate_credentials(web_app_user, web_app_pass, config_location,
-                                    db_web_app_user, db_web_app_pass, db_config_location):
-                break
-    else:
-        print("Invalid row number.")
+                if validate_credentials(web_app_user, web_app_pass, config_location,
+                                        db_web_app_user, db_web_app_pass, db_config_location):
+                    break
+        else:
+            print("Invalid row number.")
+
+        stop = input("Do you want to quit? (y/n): ")
 
     connection.close()
 
