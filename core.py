@@ -1,5 +1,5 @@
 import sqlite3
-#import random
+import random
 from termcolor import colored
 
 def read_row(connection, row_number):
@@ -44,7 +44,7 @@ def main():
 
     num_rows = 2
     rows = [x for x in range(1,num_rows+1)]
-    print(rows)
+    random.shuffle(rows)
     current_row = 0
 
     while(stop != 'y' and current_row < num_rows):
