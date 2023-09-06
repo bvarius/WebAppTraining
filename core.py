@@ -1,5 +1,5 @@
 import sqlite3
-import random
+#import random
 from termcolor import colored
 
 def read_row(connection, row_number):
@@ -41,9 +41,15 @@ def validate_credentials(web_app_user, web_app_pass, config_location, db_web_app
 def main():
     connection = sqlite3.connect('webapps.db')
     stop = 'n'
-    while(stop != 'y'):
-        row_number = random.randint(1,2)
 
+    num_rows = 2
+    rows = [x for x in range(1,num_rows+1)]
+    print(rows)
+    current_row = 0
+
+    while(stop != 'y' and current_row < num_rows):
+        row_number = rows[current_row]
+        current_row += 1
         row_data = read_row(connection, row_number)
         if row_data:
             _, vm_name, _, db_web_app_user, db_web_app_pass, _, os_user, os_pass, db_config_location = row_data
