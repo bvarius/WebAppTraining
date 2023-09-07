@@ -14,11 +14,11 @@ def print_vm_info(vm_name, os_user, os_pass):
     print("OS Pass:", os_pass)
 
 def validate_credentials(web_app_user, web_app_pass, config_location, db_web_app_user, db_web_app_pass, db_config_location):
-    ret = False
+    return_value = False
     if (web_app_user == db_web_app_user and
             web_app_pass == db_web_app_pass and
             config_location == db_config_location):
-        ret = True
+        return_value = True
     print(colored("Correct Values:", "green"))
     if web_app_user == db_web_app_user:
         print("Webapp Username: ", web_app_user)
@@ -26,7 +26,7 @@ def validate_credentials(web_app_user, web_app_pass, config_location, db_web_app
         print("Webapp Password: ", web_app_pass)
     if config_location == db_config_location:
         print("Webapp Config: ", config_location)
-    if ret == False:
+    if (return_value == False):
         print(colored("Incorrect Values:", "red"))
         if web_app_user != db_web_app_user:
             print("Webapp Username: ", web_app_user)
@@ -36,7 +36,7 @@ def validate_credentials(web_app_user, web_app_pass, config_location, db_web_app
             print("Webapp Config: ", config_location)
     else:
         print(colored("Great Job!", "green"))
-    return ret
+    return return_value
 
 def main():
     connection = sqlite3.connect('webapps.db')
