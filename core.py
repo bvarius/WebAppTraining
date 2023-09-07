@@ -1,38 +1,54 @@
 # Import necessary libraries
 import sqlite3
 import random
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session, redirect, url_for
 from termcolor import colored
 
 app = Flask(__name__)
 
+app.secret_key = '12345'
+
+num_rows = 2
+rows = [x for x in range(1,num_rows+1)]
+random.shuffle(rows)
+current_row = 0
+
 # Define a route to render the initial page
 @app.route('/')
 def index():
-    return render_template('index.html')
+    if current_row >= len(num_rows):
+        return redirect(url_for('results'))
+    # Connect to the SQLite database
+    connection = sqlite3.connect('webapps.db')
+
+    row_number = rows[current_row]
+    row_data = read_row(connection, row_number)
+    connection.close()
+    
+    if row_data:
+        _, vm_name, _, _r, _, _, os_user, os_pass, _ = row_data
+        session['row_number'] = row_number
+
+    else:
+        return "Invalid row number"
+
+    return render_template('index.html', vm_name=vm_name, os_user=os_user, os_pass=os_pass)
 
 # Define a route to handle the form submission and display results
 @app.route('/check_credentials', methods=['POST'])
 def check_credentials():
-    # Connect to the SQLite database
     connection = sqlite3.connect('webapps.db')
+
+    row_number = session['row_number']
+
+    row_data = read_row(connection, row_number)
+    if row_data:
+        _, vm_name, _, db_web_app_user, db_web_app_pass, _, os_user, os_pass, db_config_location = row_data
 
     # Retrieve form data
     web_app_user = request.form['webapp_user']
     web_app_pass = request.form['webapp_pass']
     config_location = request.form['webapp_path']
-
-    num_rows = 2
-    rows = [x for x in range(1,num_rows+1)]
-    random.shuffle(rows)
-    current_row = 0
-
-    while(current_row < num_rows):
-        row_number = rows[current_row]
-        current_row += 1
-        row_data = read_row(connection, row_number)
-        if row_data:
-            _, vm_name, _, db_web_app_user, db_web_app_pass, _, os_user, os_pass, db_config_location = row_data
 
     return_value = validate_credentials(web_app_user, web_app_pass, config_location,
                                         db_web_app_user, db_web_app_pass, db_config_location)
