@@ -1,30 +1,36 @@
 # Import necessary libraries
 import sqlite3
 import random
-from flask import Flask, render_template, request, session, redirect, url_for
+from flask import Flask, render_template, request, session
 from termcolor import colored
 
 app = Flask(__name__)
 
 app.secret_key = '12345'
 
-num_rows = 2
-rows = [x for x in range(1,num_rows+1)]
-random.shuffle(rows)
-current_row = 0
+NUM_ROWS = 2
+ROWS = [x for x in range(1,NUM_ROWS+1)]
+CURRENT_ROW = 0
+CORRECT_ANSWERS = 0
+ATTEMPTS = 0
 
 # Define a route to render the initial page
 @app.route('/')
 def index():
-    if current_row >= len(num_rows):
-        return redirect(url_for('results'))
+    #reset variables if not first time through
+    global CURRENT_ROW, CORRECT_ANSWERS, ATTEMPTS
+    random.shuffle(ROWS)
+    CURRENT_ROW = 0
+    CORRECT_ANSWERS = 0
+    ATTEMPTS = 0
+    
     # Connect to the SQLite database
     connection = sqlite3.connect('webapps.db')
 
-    row_number = rows[current_row]
+    row_number = ROWS[CURRENT_ROW]
     row_data = read_row(connection, row_number)
     connection.close()
-    
+
     if row_data:
         _, vm_name, _, _r, _, _, os_user, os_pass, _ = row_data
         session['row_number'] = row_number
@@ -37,6 +43,8 @@ def index():
 # Define a route to handle the form submission and display results
 @app.route('/check_credentials', methods=['POST'])
 def check_credentials():
+    global ATTEMPTS, CORRECT_ANSWERS, CURRENT_ROW
+
     connection = sqlite3.connect('webapps.db')
 
     row_number = session['row_number']
@@ -50,15 +58,31 @@ def check_credentials():
     web_app_pass = request.form['webapp_pass']
     config_location = request.form['webapp_path']
 
-    return_value = validate_credentials(web_app_user, web_app_pass, config_location,
+    result = validate_credentials(web_app_user, web_app_pass, config_location,
                                         db_web_app_user, db_web_app_pass, db_config_location)
 
-    connection.close()
+    ATTEMPTS += 1
 
+    if (result):
+        CORRECT_ANSWERS += 1
+        CURRENT_ROW += 1
+
+        if CURRENT_ROW >= NUM_ROWS:
+            return render_template('result.html', correct_answers=CORRECT_ANSWERS, attempts=ATTEMPTS)
+        row_number = ROWS[CURRENT_ROW]
+        row_data = read_row(connection, row_number)
+
+        if row_data:
+            _, vm_name, _, _r, _, _, os_user, os_pass, _ = row_data
+            session['row_number'] = row_number
+
+        else:
+            connection.close()
+            return "Invalid row number"
+    connection.close()
     # Render the results using a template
-    return render_template('result.html', vm_name=vm_name, os_user=os_user, os_pass=os_pass,
-                           web_app_user=web_app_user, web_app_pass=web_app_pass,
-                           config_location=config_location, return_value=return_value)
+    return render_template('feedback.html', vm_name=vm_name, os_user=os_user, os_pass=os_pass,
+                           result=result)
 
 def read_row(connection, row_number):
     cursor = connection.cursor()
@@ -95,39 +119,6 @@ def validate_credentials(web_app_user, web_app_pass, config_location, db_web_app
     else:
         print(colored("Great Job!", "green"))
     return return_value
-
-def main():
-    connection = sqlite3.connect('webapps.db')
-    stop = 'n'
-
-    num_rows = 2
-    rows = [x for x in range(1,num_rows+1)]
-    random.shuffle(rows)
-    current_row = 0
-
-    while(stop != 'y' and current_row < num_rows):
-        row_number = rows[current_row]
-        current_row += 1
-        row_data = read_row(connection, row_number)
-        if row_data:
-            _, vm_name, _, db_web_app_user, db_web_app_pass, _, os_user, os_pass, db_config_location = row_data
-
-            print_vm_info(vm_name, os_user, os_pass)
-
-            while True:
-                web_app_user = input("Enter Webapp username: ")
-                web_app_pass = input("Enter Webapp password: ")
-                config_location = input("Enter config file path: ")
-
-                if validate_credentials(web_app_user, web_app_pass, config_location,
-                                        db_web_app_user, db_web_app_pass, db_config_location):
-                    break
-        else:
-            print("Invalid row number.")
-
-        stop = input("Do you want to quit? (y/n): ")
-
-    connection.close()
 
 if __name__ == '__main__':
     app.run(debug=True)

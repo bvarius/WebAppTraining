@@ -12,9 +12,13 @@
 
         <div id="result">
             <h3>Result</h3>
-            <p class="success">You got {{ correct_guess }}/{{ attempts }} correct!</p>
+            <p class="success">You got {{ correct_answers }}/{{ attempts }} correct!</p>
             <p> Nice job!</p>
         </div>
+
+        <form method="GET" action="/">
+            <input type="submit" value="Play Again">
+        </form>
     </div>
 </body>
 </html>

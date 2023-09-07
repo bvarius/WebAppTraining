@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webapp Training</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='index.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Webapp Training</h1>
+
+        <div id="vm_info">
+            <h3>VM Info</h3>
+            <span>VM Name: </span>
+            <span>{{ vm_name }}</span>
+            <br>
+            
+            <span>OS Username: </span>
+            <span>{{ os_user }}</span>
+            <br>
+
+            <span>OS Password: </span>
+            <span>{{ os_pass }}</span>
+            <br><br>
+        </div>
+        <div id="feedback">
+            {% if result %}
+                <p id="correct">Correct! Great Job!</p>
+            {% else %}
+                <p id="incorrect">Incorrect! Try again!</p>
+            {% endif %}
+        </div>
+        <div id="form">
+            <form method="POST" action="/check_credentials">
+                <label for="webapp_user">Webapp Username: </label>
+                <input type="text" id="webapp_user" name="webapp_user">
+                <br><br>
+                
+                <label for="webapp_pass">Webapp Password: </label>
+                <input type="text" id="webapp_pass" name="webapp_pass">
+                <br><br>
+                
+                <label for="webapp_path">Webapp Config Path: </label>
+                <input type="text" id="webapp_path" name="webapp_path">
+                <br><br>
+
+                <input type="submit" value="Check Answers">
+            </form>
+        </div>
+    </div>
+</body>
+</html>
