@@ -26,17 +26,17 @@
         </div>
 
         <div id="form">
-            <form>
-                <label for="user">Webapp Username: </label>
-                <input type="text" id="user">
+            <form method="POST" action="/check_credentials">
+                <label for="webapp_user">Webapp Username: </label>
+                <input type="text" id="webapp_user" name="webapp_user">
                 <br><br>
                 
-                <label for="pass">Webapp Password: </label>
-                <input type="text" id="pass">
+                <label for="webapp_pass">Webapp Password: </label>
+                <input type="text" id="webapp_pass" name="webapp_pass">
                 <br><br>
                 
-                <label for="path">Webapp Config Path: </label>
-                <input type="text" id="path">
+                <label for="webapp_path">Webapp Config Path: </label>
+                <input type="text" id="webapp_path" name="webapp_path">
                 <br><br>
 
                 <input type="submit" value="Check Answers">
