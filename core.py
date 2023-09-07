@@ -1,6 +1,48 @@
+# Import necessary libraries
 import sqlite3
 import random
+from flask import Flask, render_template, request
 from termcolor import colored
+
+app = Flask(__name__)
+
+# Define a route to render the initial page
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+# Define a route to handle the form submission and display results
+@app.route('/check_credentials', methods=['POST'])
+def check_credentials():
+    # Connect to the SQLite database
+    connection = sqlite3.connect('webapps.db')
+
+    # Retrieve form data
+    web_app_user = request.form['webapp_user']
+    web_app_pass = request.form['webapp_pass']
+    config_location = request.form['webapp_path']
+
+    num_rows = 2
+    rows = [x for x in range(1,num_rows+1)]
+    random.shuffle(rows)
+    current_row = 0
+
+    while(current_row < num_rows):
+        row_number = rows[current_row]
+        current_row += 1
+        row_data = read_row(connection, row_number)
+        if row_data:
+            _, vm_name, _, db_web_app_user, db_web_app_pass, _, os_user, os_pass, db_config_location = row_data
+
+    return_value = validate_credentials(web_app_user, web_app_pass, config_location,
+                                        db_web_app_user, db_web_app_pass, db_config_location)
+
+    connection.close()
+
+    # Render the results using a template
+    return render_template('result.html', vm_name=vm_name, os_user=os_user, os_pass=os_pass,
+                           web_app_user=web_app_user, web_app_pass=web_app_pass,
+                           config_location=config_location, return_value=return_value)
 
 def read_row(connection, row_number):
     cursor = connection.cursor()
@@ -72,4 +114,4 @@ def main():
     connection.close()
 
 if __name__ == '__main__':
-    main()
+    app.run(debug=True)
