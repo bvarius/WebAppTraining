@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webapp Training - Results</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Webapp Training - Results</h1>
+
+        <div id="vm_info">
+            <h3>VM Info</h3>
+            <span>VM Name: </span>
+            <span>{{ vm_name }}</span>
+            <br>
+            
+            <span>OS Username: </span>
+            <span>{{ os_user }}</span>
+            <br>
+
+            <span>OS Password: </span>
+            <span>{{ os_pass }}</span>
+            <br><br>
+        </div>
+
+        <div id="result">
+            <h3>Result</h3>
+            {% if return_value %}
+                <p class="success">Credentials are correct! Great job!</p>
+            {% else %}
+                <p class="error">Credentials are incorrect. Please check again.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
