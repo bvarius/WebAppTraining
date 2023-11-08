@@ -8,7 +8,24 @@ app = Flask(__name__)
 
 app.secret_key = '12345'
 
-NUM_ROWS = 2
+def get_row_count():
+    conn = sqlite3.connect('webapps.db')
+
+    cursor = conn.cursor()
+
+    table_name = 'vms'
+    query = f'SELECT COUNT(*) FROM {table_name}'
+
+    cursor.execute(query)
+
+    row_count = cursor.fetchone()[0]
+
+    cursor.close()
+    conn.close()
+
+    return row_count
+
+NUM_ROWS = get_row_count()
 ROWS = [x for x in range(1,NUM_ROWS+1)]
 CURRENT_ROW = 0
 CORRECT_ANSWERS = 0
@@ -83,6 +100,51 @@ def check_credentials():
     # Render the results using a template
     return render_template('feedback.html', vm_name=vm_name, os_user=os_user, os_pass=os_pass,
                            result=result)
+@app.route('/update_form', methods=['GET', 'POST'])
+def update_form():
+    return render_template('add_vm_form.html')
+
+@app.route('/update_database', methods=['POST'])
+def update_database():
+    connection = sqlite3.connect('webapps.db')
+
+    vm_name = request.form['vm_name']
+    webapp_name = request.form['webapp_name']
+    webapp_user = request.form['webapp_user']
+    webapp_pass = request.form['webapp_pass']
+    os_type = request.form['os_type']
+    os_user = request.form['os_user']
+    os_pass = request.form['os_pass']
+    config_location = request.form['config_location']
+    
+    create_entry(conn=connection, vm_name=vm_name, web_app_name=webapp_name, web_app_user=webapp_user, web_app_pass=webapp_pass,
+                 os_type=os_type, os_user=os_user, os_pass=os_pass, config_location=config_location)
+    
+    connection.close()
+    return render_template('update_complete.html')
+def create_entry(conn, vm_name, web_app_name, web_app_user, web_app_pass,
+                 os_type, os_user, os_pass, config_location):
+
+    cursor = conn.cursor()
+    cursor.execute('''
+            CREATE TABLE IF NOT EXISTS vms (
+                id INTEGER PRIMARY KEY,
+                vm_name TEXT,
+                web_app_name TEXT, web_app_user TEXT,
+                web_app_pass TEXT,
+                os_type TEXT,
+                os_user TEXT,
+                os_pass TEXT,
+                config_location TEXT
+            )
+        ''')
+    query = """
+    INSERT INTO vms (vm_name, web_app_name, web_app_user, web_app_pass, os_type, os_user, os_pass, config_location)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """
+    cursor.execute(query, (vm_name, web_app_name, web_app_user, web_app_pass,
+                           os_type, os_user, os_pass, config_location))
+    conn.commit()
 
 def read_row(connection, row_number):
     cursor = connection.cursor()

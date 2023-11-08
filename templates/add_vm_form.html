@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Database</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='index.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Update Database</h1>
+
+        <div id="form">
+            <form method="POST" action="/update_database">
+                <label for="vm_name">VM Name: </label>
+                <input type="text" id="vm_name" name="vm_name">
+                <br><br>
+                
+                <label for="webapp_name">Webapp Name: </label>
+                <input type="text" id="webapp_name" name="webapp_name">
+                <br><br>
+                
+                <label for="webapp_user">Webapp Username: </label>
+                <input type="text" id="webapp_user" name="webapp_user">
+                <br><br>
+                
+                <label for="webapp_pass">Webapp Password: </label>
+                <input type="text" id="webapp_pass" name="webapp_pass">
+                <br><br>
+
+                <label for="os_type">OS Type: </label>
+                <input type="text" id="os_type" name="os_type">
+                <br><br>
+                
+                <label for="os_user">OS Username: </label>
+                <input type="text" id="os_user" name="os_user">
+                <br><br>
+                
+                <label for="os_pass">OS Password: </label>
+                <input type="text" id="os_pass" name="os_pass">
+                <br><br>
+                
+                <label for="config_location">Webapp Config Path: </label>
+                <input type="text" id="config_location" name="config_location">
+                <br><br>
+                
+                <input type="submit" value="Submit VM">
+            </form>
+        </div>
+    </div>
+</body>
+</html>
