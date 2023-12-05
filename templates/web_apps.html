@@ -24,15 +24,13 @@
             <span>{{ os_pass }}</span>
             <br><br>
         </div>
+
         <div id="feedback">
-            {% if result %}
-                <p id="correct">Correct! Great Job!</p>
-            {% else %}
-                <p id="incorrect">Incorrect! Try again!</p>
-            {% endif %}
+            <span>{{ res_message }}</span>
         </div>
+
         <div id="form">
-            <form method="POST" action="/check_credentials">
+            <form method="POST" action="/web_apps">
                 <label for="webapp_user">Webapp Username: </label>
                 <input type="text" id="webapp_user" name="webapp_user">
                 <br><br>

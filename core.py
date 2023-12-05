@@ -8,8 +8,8 @@ app = Flask(__name__)
 
 app.secret_key = '12345'
 
-def get_row_count():
-    conn = sqlite3.connect('webapps.db')
+def get_row_count(database):
+    conn = sqlite3.connect(database)
 
     cursor = conn.cursor()
 
@@ -25,81 +25,100 @@ def get_row_count():
 
     return row_count
 
-NUM_ROWS = get_row_count()
-ROWS = [x for x in range(1,NUM_ROWS+1)]
-CURRENT_ROW = 0
-CORRECT_ANSWERS = 0
-ATTEMPTS = 0
-
 # Define a route to render the initial page
 @app.route('/')
 def index():
-    #reset variables if not first time through
-    global CURRENT_ROW, CORRECT_ANSWERS, ATTEMPTS
-    random.shuffle(ROWS)
-    CURRENT_ROW = 0
-    CORRECT_ANSWERS = 0
-    ATTEMPTS = 0
-    
-    # Connect to the SQLite database
+    return render_template('index.html')
+
+@app.route('/web_apps', methods=['GET', 'POST'])
+def web_apps():
+
     connection = sqlite3.connect('webapps.db')
 
-    row_number = ROWS[CURRENT_ROW]
-    row_data = read_row(connection, row_number)
-    connection.close()
-
-    if row_data:
-        _, vm_name, _, _r, _, _, os_user, os_pass, _ = row_data
-        session['row_number'] = row_number
+    if (request.method == 'GET'): #First time through
+        #randomize list
+        res_message = ''
+        session['row_numbers'] = [x for x in range(1,get_row_count('webapps.db')+1)]
+        random.shuffle(session['row_numbers'])
+        session['correct_answers'] = 0
+        session['attempts'] = 0
 
     else:
-        return "Invalid row number"
+        #increment attempts count
+        session['attempts'] += 1
+        # Retrieve form data
+        web_app_user = request.form['webapp_user']
+        web_app_pass = request.form['webapp_pass']
+        config_location = request.form['webapp_path']
 
-    return render_template('index.html', vm_name=vm_name, os_user=os_user, os_pass=os_pass)
-
-# Define a route to handle the form submission and display results
-@app.route('/check_credentials', methods=['POST'])
-def check_credentials():
-    global ATTEMPTS, CORRECT_ANSWERS, CURRENT_ROW
-
-    connection = sqlite3.connect('webapps.db')
-
-    row_number = session['row_number']
-
-    row_data = read_row(connection, row_number)
-    if row_data:
-        _, vm_name, _, db_web_app_user, db_web_app_pass, _, os_user, os_pass, db_config_location = row_data
-
-    # Retrieve form data
-    web_app_user = request.form['webapp_user']
-    web_app_pass = request.form['webapp_pass']
-    config_location = request.form['webapp_path']
-
-    result = validate_credentials(web_app_user, web_app_pass, config_location,
-                                        db_web_app_user, db_web_app_pass, db_config_location)
-
-    ATTEMPTS += 1
-
-    if (result):
-        CORRECT_ANSWERS += 1
-        CURRENT_ROW += 1
-
-        if CURRENT_ROW >= NUM_ROWS:
-            return render_template('result.html', correct_answers=CORRECT_ANSWERS, attempts=ATTEMPTS)
-        row_number = ROWS[CURRENT_ROW]
-        row_data = read_row(connection, row_number)
-
-        if row_data:
-            _, vm_name, _, _r, _, _, os_user, os_pass, _ = row_data
-            session['row_number'] = row_number
-
-        else:
+        result = validate_credentials(web_app_user, web_app_pass, config_location,
+                                        session['db_web_app_user'], session['db_web_app_pass'], session['db_config_location'])
+        #check credentials
+        if (result):
+            session['correct_answers'] += 1
+            res_message = 'Correct! Great Job!'
+            #select next question info
+            session['current_row'] = session['row_numbers'].pop(0)
+            row_data = read_row(connection, session['current_row'])
             connection.close()
-            return "Invalid row number"
-    connection.close()
-    # Render the results using a template
-    return render_template('feedback.html', vm_name=vm_name, os_user=os_user, os_pass=os_pass,
-                           result=result)
+            if row_data:
+                _, session['vm_name'], _, session['db_web_app_user'], session['db_web_app_pass'], _, session['os_user'], session['os_pass'], session['db_config_location'] = row_data
+            else:
+                return "Invalid row number"
+
+            #check if row_numbers array is empty
+            if (not session['row_numbers']):
+                #display results page
+                return render_template('result.html', correct_answers=session['correct_answers'], attempts=session['attempts'])
+        else:
+            res_message = 'Incorrect! Try Again!'
+
+    return render_template('web_apps.html', vm_name=session['vm_name'], os_user=session['os_user'], os_pass=session['os_pass'], res_message=res_message)
+
+@app.route('/win_firewalls', methods=['GET','POST'])
+def firewalls():
+    connection = sqlite3.connect('firewalls.db')
+    
+    if (request.method == 'GET'): #First time through
+        #randomize list
+        res_message = ''
+        session['row_numbers'] = [x for x in range(1,get_row_count('firewalls.db')+1)]
+        random.shuffle(session['row_numbers'])
+        session['correct_answers'] = 0
+        session['attempts'] = 0
+
+    else:
+        #increment attempts count
+        session['attempts'] += 1
+        # Retrieve form data
+        web_app_user = request.form['webapp_user']
+        web_app_pass = request.form['webapp_pass']
+        config_location = request.form['webapp_path']
+
+        result = validate_credentials(web_app_user, web_app_pass, config_location,
+                                        session['db_web_app_user'], session['db_web_app_pass'], session['db_config_location'])
+        #check credentials
+        if (result):
+            session['correct_answers'] += 1
+            res_message = 'Correct! Great Job!'
+            #select next question info
+            session['current_row'] = session['row_numbers'].pop(0)
+            row_data = read_row(connection, session['current_row'])
+            connection.close()
+            if row_data:
+                _, session['vm_name'], _, session['db_web_app_user'], session['db_web_app_pass'], _, session['os_user'], session['os_pass'], session['db_config_location'] = row_data
+            else:
+                return "Invalid row number"
+
+            #check if row_numbers array is empty
+            if (not session['row_numbers']):
+                #display results page
+                return render_template('result.html', correct_answers=session['correct_answers'], attempts=session['attempts'])
+        else:
+            res_message = 'Incorrect! Try Again!'
+
+    return render_template('firewalls.html')#, service_name, port, executable, ip_address)
+
 @app.route('/update_form', methods=['GET', 'POST'])
 def update_form():
     return render_template('add_vm_form.html')
@@ -181,6 +200,9 @@ def validate_credentials(web_app_user, web_app_pass, config_location, db_web_app
     else:
         print(colored("Great Job!", "green"))
     return return_value
+
+def validate_rule():
+    return True
 
 if __name__ == '__main__':
     app.run(debug=True)
